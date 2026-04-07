@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Docket Challenge — Texas Judiciary</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f5f5f4;
+  --color-background-tertiary:#eeede9;
+  --color-text-primary:#1a1a18;
+  --color-text-secondary:#5f5e5a;
+  --color-text-tertiary:#888780;
+  --color-border-tertiary:rgba(0,0,0,0.12);
+  --color-border-secondary:rgba(0,0,0,0.22);
+  --color-border-primary:rgba(0,0,0,0.32);
+  --border-radius-md:8px;
+  --border-radius-lg:12px;
+  --border-radius-xl:16px;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-serif:Georgia,serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --color-background-primary:#1c1c1a;
+    --color-background-secondary:#252523;
+    --color-background-tertiary:#2e2e2b;
+    --color-text-primary:#f0ede6;
+    --color-text-secondary:#b4b2a9;
+    --color-text-tertiary:#888780;
+    --color-border-tertiary:rgba(255,255,255,0.1);
+    --color-border-secondary:rgba(255,255,255,0.18);
+    --color-border-primary:rgba(255,255,255,0.28);
+  }
+}
+body{font-family:var(--font-sans);color:var(--color-text-primary);background:var(--color-background-tertiary);min-height:100vh;padding:1.5rem 1rem 3rem}
+.wrap{max-width:700px;margin:0 auto}
+.screen{display:none}
+.screen.on{display:block}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;letter-spacing:.04em}
+.badge-blue{background:#E6F1FB;color:#0C447C}
+.badge-red{background:#FCEBEB;color:#791F1F}
+.badge-green{background:#EAF3DE;color:#27500A}
+.badge-amber{background:#FAEEDA;color:#633806}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem 1.5rem;margin-bottom:1rem}
+.card-accent{border-left:3px solid #378ADD;border-radius:0 var(--border-radius-lg) var(--border-radius-lg) 0}
+h1{font-size:22px;font-weight:500;margin-bottom:.25rem}
+h2{font-size:18px;font-weight:500;margin-bottom:.75rem}
+h3{font-size:16px;font-weight:500;margin-bottom:.5rem}
+p{font-size:15px;line-height:1.7;color:var(--color-text-secondary);margin-bottom:.75rem}
+p:last-child{margin-bottom:0}
+.meta-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.meta-item{font-size:13px;color:var(--color-text-secondary)}
+.meta-item strong{color:var(--color-text-primary);font-weight:500}
+.progress-wrap{margin-bottom:1.5rem}
+.progress-row{display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px}
+.progress-track{height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:#378ADD;border-radius:3px;transition:width .4s ease}
+.score-pill{background:var(--color-background-secondary);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:500}
+.case-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+.case-num{font-size:11px;color:var(--color-text-tertiary);font-weight:500;letter-spacing:.06em;white-space:nowrap;margin-top:2px}
+.case-scenario{font-size:15px;line-height:1.75;color:var(--color-text-primary);margin-bottom:1.25rem}
+.q-label{font-size:12px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.05em;margin-bottom:.6rem}
+.choices{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}
+.choice-btn{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:.7rem 1rem;font-size:14px;color:var(--color-text-primary);cursor:pointer;text-align:left;font-family:var(--font-sans);line-height:1.45;transition:background .15s,border-color .15s;display:flex;align-items:flex-start;gap:.6rem}
+.choice-btn:hover:not([disabled]){background:var(--color-background-secondary);border-color:var(--color-border-primary)}
+.choice-btn[disabled]{cursor:default}
+.choice-btn .letter{min-width:20px;height:20px;border-radius:50%;background:var(--color-background-secondary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px}
+.choice-btn.correct{background:#EAF3DE;border-color:#3B6D11;color:#173404}
+.choice-btn.correct .letter{background:#3B6D11;color:#EAF3DE}
+.choice-btn.wrong{background:#FCEBEB;border-color:#A32D2D;color:#501313}
+.choice-btn.wrong .letter{background:#A32D2D;color:#FCEBEB}
+.choice-btn.reveal{background:#EAF3DE;border-color:#3B6D11;color:#173404}
+.choice-btn.reveal .letter{background:#3B6D11;color:#EAF3DE}
+.feedback{border-radius:var(--border-radius-md);padding:1rem 1.1rem;font-size:14px;line-height:1.7;margin-bottom:1rem}
+.feedback.correct{background:#EAF3DE;border:0.5px solid #3B6D11;color:#173404}
+.feedback.wrong{background:#FCEBEB;border:0.5px solid #A32D2D;color:#501313}
+.feedback strong{font-weight:500}
+.next-btn{width:100%;padding:.75rem;background:#1B2A4A;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-sans);transition:opacity .15s}
+.next-btn:hover{opacity:.85}
+.next-btn.secondary{background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary)}
+.start-btn{width:100%;padding:.8rem;background:#1B2A4A;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-sans);transition:opacity .15s;margin-top:.5rem}
+.start-btn:hover{opacity:.85}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:1.5rem 0}
+.stat-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;text-align:center}
+.stat-num{font-size:28px;font-weight:500;display:block;margin-bottom:2px}
+.stat-lbl{font-size:12px;color:var(--color-text-secondary)}
+.review-item{padding:.75rem 0;border-bottom:0.5px solid var(--color-border-tertiary);display:grid;grid-template-columns:auto 1fr auto;gap:.75rem;align-items:start;font-size:13px}
+.review-item:last-child{border-bottom:none}
+.dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;display:block}
+.dot.ok{background:#639922}
+.dot.no{background:#E24B4A}
+.schedule{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem 1.25rem}
+.sched-row{display:flex;gap:.75rem;align-items:flex-start;font-size:13px;padding:.4rem 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.sched-row:last-child{border-bottom:none}
+.sched-time{font-weight:500;min-width:70px;color:var(--color-text-secondary);flex-shrink:0}
+.btn-row{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn-row .next-btn{flex:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="intro" class="screen on">
+  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#1B2A4A"/><text x="16" y="22" text-anchor="middle" font-size="18" fill="#C9A84C" font-weight="700">&#x2696;</text></svg>
+    <div>
+      <div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.07em;margin-bottom:1px">Texas Courts</div>
+      <h1 style="margin:0">The Docket Challenge</h1>
+    </div>
+  </div>
+
+  <div class="card card-accent" style="margin-bottom:1rem">
+    <h3>Your role</h3>
+    <p>You've just been hired as a clerk at the Texas Office of Court Administration. A stack of new cases has arrived. Your job: read each case file and answer questions about jurisdiction, court levels, and appeals. Route them correctly to earn your badge.</p>
+  </div>
+
+  <div class="schedule" style="margin-bottom:1rem">
+    <div class="sched-row"><span class="sched-time">0&ndash;5 min</span><span>Teacher intro &mdash; review the court hierarchy pyramid</span></div>
+    <div class="sched-row"><span class="sched-time">5&ndash;35 min</span><span>Work through 12 case files individually or in pairs</span></div>
+    <div class="sched-row"><span class="sched-time">35&ndash;45 min</span><span>Class review &mdash; discuss which questions were tricky</span></div>
+    <div class="sched-row"><span class="sched-time">45&ndash;50 min</span><span>Final debrief and wrap-up</span></div>
+  </div>
+
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem">
+    <span class="badge badge-blue">12 case files</span>
+    <span class="badge badge-blue">~25 minutes to complete</span>
+    <span class="badge badge-amber">All 5 court levels covered</span>
+  </div>
+
+  <div class="card" style="margin-bottom:1.25rem">
+    <h3 style="margin-bottom:.6rem">Courts covered in this activity</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.35rem">
+      <div style="font-size:13px;color:var(--color-text-secondary);padding:.3rem 0;border-bottom:0.5px solid var(--color-border-tertiary)">Justice of the Peace Courts</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);padding:.3rem 0;border-bottom:0.5px solid var(--color-border-tertiary)">Municipal Courts</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);padding:.3rem 0;border-bottom:0.5px solid var(--color-border-tertiary)">County Courts (all types)</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);padding:.3rem 0;border-bottom:0.5px solid var(--color-border-tertiary)">District Courts</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);padding:.3rem 0;border-bottom:0.5px solid var(--color-border-tertiary)">Courts of Appeals</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);padding:.3rem 0;border-bottom:0.5px solid var(--color-border-tertiary)">Texas Supreme Court</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);padding:.3rem 0">Court of Criminal Appeals</div>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">Open case files &rarr;</button>
+</div>
+
+<div id="game" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-row">
+      <span id="prog-label">Case file 1 of 12</span>
+      <span class="score-pill" id="score-pill">Score: 0 / 0</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="card" id="case-card">
+    <div class="case-header">
+      <div>
+        <div id="q-tag" style="margin-bottom:.5rem"></div>
+        <div id="q-type-badge"></div>
+      </div>
+      <div class="case-num" id="case-num"></div>
+    </div>
+    <div class="case-scenario" id="scenario"></div>
+    <div class="q-label">Select the best answer:</div>
+    <div class="choices" id="choices"></div>
+    <div id="feedback" style="display:none"></div>
+    <button class="next-btn" id="next-btn" style="display:none" onclick="nextQ()"></button>
+  </div>
+</div>
+
+<div id="results" class="screen">
+  <div style="text-align:center;margin-bottom:1.5rem">
+    <div style="font-size:36px;margin-bottom:.5rem" id="trophy-icon"></div>
+    <h1 id="result-title" style="margin-bottom:.25rem"></h1>
+    <p id="result-sub" style="font-size:14px;max-width:400px;margin:0 auto"></p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-box"><span class="stat-num" id="r-correct"></span><span class="stat-lbl">Correct</span></div>
+    <div class="stat-box"><span class="stat-num" id="r-pct"></span><span class="stat-lbl">Score</span></div>
+    <div class="stat-box"><span class="stat-num" id="r-streak"></span><span class="stat-lbl">Best streak</span></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <h3 style="margin-bottom:.75rem">Answer review</h3>
+    <div id="review-list"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="next-btn" onclick="restartGame()">Play again &rarr;</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const Qs = [
+  {
+    tag:"Jurisdiction",
+    type:"Which court hears this case first?",
+    badge:"badge-blue",
+    num:"Case File #TX-001",
+    scenario:"Maria is driving through Austin and gets pulled over for going 52 mph in a 35 mph zone. She believes the speed limit sign was covered by a tree branch and wants to contest the ticket in court.",
+    choices:["Justice of the Peace Court","Municipal Court","County Court at Law","District Court"],
+    correct:1,
+    explanation:"Because the violation occurred inside Austin city limits, it goes to Municipal Court. Municipal Courts handle Class C misdemeanors (fine-only offenses) and city ordinance violations within city limits. If the ticket had been issued outside city limits, a Justice of the Peace Court would handle it."
+  },
+  {
+    tag:"Jurisdiction",
+    type:"Which court hears this case first?",
+    badge:"badge-blue",
+    num:"Case File #TX-002",
+    scenario:"After moving out, a landlord is refusing to return a tenant's $2,800 security deposit. The tenant wants to sue to get the money back and claim it was wrongfully withheld.",
+    choices:["District Court","Texas Supreme Court","Justice of the Peace Court","Constitutional County Court"],
+    correct:2,
+    explanation:"Justice of the Peace Courts handle small civil claims up to $20,000 — this is exactly the type of case they were designed for. They are the most accessible trial courts in Texas, and no attorney is required for small claims like this."
+  },
+  {
+    tag:"Appeals",
+    type:"Where does this case go next?",
+    badge:"badge-amber",
+    num:"Case File #TX-003",
+    scenario:"Carlos loses his small claims case in Justice of the Peace Court. He believes the judge made a serious error and wants to appeal. He files a notice of appeal within 21 days.",
+    choices:["His case is reviewed by a panel of Court of Appeals judges","His case goes directly to the Texas Supreme Court","He gets a brand-new trial in the County Court","The JP Court re-hears the case with a different judge"],
+    correct:2,
+    explanation:"Appeals from JP and Municipal Courts use a process called 'trial de novo' — Latin for 'new trial.' The County Court does not just review the JP record; it holds an entirely fresh trial as if the first one never happened. This is different from how higher-level appeals work."
+  },
+  {
+    tag:"Jurisdiction",
+    type:"Which court hears this case first?",
+    badge:"badge-blue",
+    num:"Case File #TX-004",
+    scenario:"Derek is arrested for his first DWI offense. The blood-alcohol test showed a 0.10 reading. He has no prior criminal record. DWI first offense is a Class B misdemeanor in Texas.",
+    choices:["Justice of the Peace Court","Municipal Court","County Court or County Court at Law","District Court"],
+    correct:2,
+    explanation:"Class A and Class B misdemeanors — more serious than Class C but less serious than felonies — are tried in County Courts (Constitutional County Courts or Statutory County Courts at Law). Class C misdemeanors, which are fine-only, go to JP or Municipal Courts instead."
+  },
+  {
+    tag:"Specialized Courts",
+    type:"Which court handles this?",
+    badge:"badge-blue",
+    num:"Case File #TX-005",
+    scenario:"Evelyn's grandmother recently passed away and left behind a will. The family needs a court to formally validate the will, appoint an executor, and supervise the distribution of the estate worth $340,000.",
+    choices:["District Court family division","Statutory Probate Court","Constitutional County Court","Court of Criminal Appeals"],
+    correct:1,
+    explanation:"Statutory Probate Courts are specialized courts that exist in about 18 of the most populous Texas counties. They handle wills, estate administration, guardianship, and trust disputes exclusively. In counties without a dedicated Probate Court, the Constitutional County Court or a County Court at Law handles probate matters."
+  },
+  {
+    tag:"Jurisdiction",
+    type:"Which court hears this case first?",
+    badge:"badge-blue",
+    num:"Case File #TX-006",
+    scenario:"A major energy company files a lawsuit against a pipeline contractor, alleging breach of contract and demanding $47 million in damages. Both companies are headquartered in Texas.",
+    choices:["County Court at Law (up to $200,000 limit)","Constitutional County Court","District Court","Texas Supreme Court"],
+    correct:2,
+    explanation:"District Courts are courts of general jurisdiction with no upper limit on civil damages. Any civil case over $500 can be filed in District Court. With $47 million at stake, this case clearly belongs there. County Courts have dollar limits that make them unsuitable for cases of this size."
+  },
+  {
+    tag:"Jurisdiction",
+    type:"Which court hears this case first?",
+    badge:"badge-blue",
+    num:"Case File #TX-007",
+    scenario:"Lisa is charged with aggravated robbery — a first-degree felony in Texas. The prosecution alleges she used a firearm during the robbery. If convicted, she faces 5–99 years in prison.",
+    choices:["County Court at Law","Constitutional County Court","Municipal Court","District Court"],
+    correct:3,
+    explanation:"All felony cases — from the least serious State Jail Felony to capital murder — are tried in District Courts. District Courts also handle grand jury proceedings, where citizens decide whether enough evidence exists to formally charge someone with a felony. County Courts only handle misdemeanors."
+  },
+  {
+    tag:"Appeals",
+    type:"Where does this case go next?",
+    badge:"badge-amber",
+    num:"Case File #TX-008",
+    scenario:"A District Court rules against a homeowner in a major property boundary dispute. The homeowner's attorney believes the judge applied the wrong legal standard and files a timely appeal.",
+    choices:["Directly to the Texas Supreme Court","One of the 14 Texas Courts of Appeals","A neighboring District Court in the same region","Back to the same District Court for a new trial"],
+    correct:1,
+    explanation:"Civil cases appealed from District Courts go to one of the 14 intermediate Courts of Appeals, organized by geographic district. These courts do not hold new trials — they review the written record and briefs from both sides to determine whether a legal error occurred. Most appeals end here."
+  },
+  {
+    tag:"Death Penalty Exception",
+    type:"Where does this case appeal?",
+    badge:"badge-red",
+    num:"Case File #TX-009",
+    scenario:"Raymond is convicted of capital murder and sentenced to death by lethal injection in a District Court. His attorneys immediately begin the appeals process, which in capital cases is automatic under Texas law.",
+    choices:["Court of Appeals for his district, then Court of Criminal Appeals","Court of Appeals for his district, then Texas Supreme Court","Directly to the Texas Supreme Court","Directly to the Court of Criminal Appeals, bypassing the Courts of Appeals"],
+    correct:3,
+    explanation:"This is the most important exception in the Texas appeals system. Death penalty cases skip the intermediate Courts of Appeals entirely and go directly from the District Court to the Texas Court of Criminal Appeals. This reflects the gravity of a capital sentence — the state's highest criminal court reviews every death sentence without delay."
+  },
+  {
+    tag:"Final Appeal — Civil",
+    type:"Which is the last Texas court for this case?",
+    badge:"badge-blue",
+    num:"Case File #TX-010",
+    scenario:"After the Court of Appeals affirms a lower-court ruling in a civil insurance dispute, the losing party believes the court misinterpreted Texas insurance law. They want one more chance to be heard at the highest level.",
+    choices:["Court of Criminal Appeals","A federal U.S. District Court","Texas Supreme Court","The case cannot be appealed further in Texas"],
+    correct:2,
+    explanation:"The Texas Supreme Court is the court of last resort for ALL civil matters in Texas, including insurance, property, contracts, family law, and administrative disputes. It has discretionary jurisdiction — it chooses which cases to accept. After the Texas Supreme Court rules, the only remaining option is the U.S. Supreme Court, but only if a federal constitutional question is at issue."
+  },
+  {
+    tag:"Court Knowledge",
+    type:"Which statement is correct?",
+    badge:"badge-amber",
+    num:"Case File #TX-011",
+    scenario:"The Texas Court of Criminal Appeals has just issued a ruling on a post-conviction habeas corpus petition — a claim by a convicted person that they are being held unlawfully. The petition cited new DNA evidence suggesting innocence.",
+    choices:["The Texas Supreme Court should have handled this petition instead","The Court of Criminal Appeals is the final authority on all Texas criminal matters, including habeas corpus","Habeas corpus petitions always go to the U.S. Supreme Court first","The case should return to the original District Court for a new trial"],
+    correct:1,
+    explanation:"The Texas Court of Criminal Appeals is the highest court for all criminal matters in the state — including post-conviction writs of habeas corpus. These petitions, which argue someone is being unlawfully imprisoned (often based on new evidence or constitutional violations), are reviewed directly by the Court of Criminal Appeals. It is one of the most powerful courts in the country for criminal law."
+  },
+  {
+    tag:"Court Structure",
+    type:"Which statement is true?",
+    badge:"badge-amber",
+    num:"Case File #TX-012",
+    scenario:"A new law student is studying for the Texas bar exam. She reads a review book that contains the following four statements about the structure of Texas's highest courts. Only one of these statements is completely accurate.",
+    choices:[
+      "Texas has one Supreme Court that handles both civil and criminal appeals, like most states",
+      "The Texas Supreme Court has 7 justices; the Court of Criminal Appeals has 9 judges",
+      "Texas and Oklahoma are the only two states with two separate courts of last resort — one civil, one criminal",
+      "Members of both high courts are appointed by the Governor and confirmed by the Senate"
+    ],
+    correct:2,
+    explanation:"Texas and Oklahoma are the only two states in the nation that maintain two completely separate courts of last resort. The Texas Supreme Court (9 justices) handles civil matters; the Court of Criminal Appeals (9 judges) handles criminal matters. Both courts' members are elected statewide to 6-year terms — they are NOT appointed. Most other states have a single unified Supreme Court that hears all appeals."
+  }
+];
+
+let cur=0,score=0,answered=false,curStreak=0,bestStreak=0,history=[];
+
+function startGame(){
+  document.getElementById('intro').classList.remove('on');
+  document.getElementById('game').classList.add('on');
+  renderQ();
+}
+
+function renderQ(){
+  const q=Qs[cur];
+  answered=false;
+  document.getElementById('prog-label').textContent='Case file '+(cur+1)+' of '+Qs.length;
+  document.getElementById('score-pill').textContent='Score: '+score+' / '+cur;
+  document.getElementById('prog-fill').style.width=((cur/Qs.length)*100)+'%';
+  document.getElementById('case-num').textContent=q.num;
+  document.getElementById('q-tag').innerHTML='<span class="badge '+q.badge+'">'+q.tag+'</span>';
+  document.getElementById('q-type-badge').innerHTML='<span style="font-size:13px;color:var(--color-text-secondary)">'+q.type+'</span>';
+  document.getElementById('scenario').textContent=q.scenario;
+  const letters=['A','B','C','D'];
+  document.getElementById('choices').innerHTML=q.choices.map(function(c,i){
+    return '<button class="choice-btn" onclick="pick('+i+')"><span class="letter">'+letters[i]+'</span><span>'+c+'</span></button>';
+  }).join('');
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('next-btn').style.display='none';
+}
+
+function pick(idx){
+  if(answered)return;
+  answered=true;
+  const q=Qs[cur];
+  const btns=document.querySelectorAll('.choice-btn');
+  btns.forEach(function(b){b.disabled=true;});
+  const isCorrect=idx===q.correct;
+  if(isCorrect){score++;curStreak++;if(curStreak>bestStreak)bestStreak=curStreak;}
+  else{curStreak=0;}
+  history.push({q:q,chosen:idx,correct:isCorrect});
+  btns[idx].classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect)btns[q.correct].classList.add('reveal');
+  const fb=document.getElementById('feedback');
+  fb.style.display='block';
+  fb.className='feedback '+(isCorrect?'correct':'wrong');
+  fb.innerHTML='<strong>'+(isCorrect?'Correct!':'Not quite.')+'</strong> '+q.explanation;
+  const nb=document.getElementById('next-btn');
+  nb.style.display='block';
+  nb.textContent=cur<Qs.length-1?'Next case file \u2192':'See my results \u2192';
+}
+
+function nextQ(){
+  cur++;
+  if(cur>=Qs.length){showResults();return;}
+  renderQ();
+}
+
+function showResults(){
+  document.getElementById('game').classList.remove('on');
+  document.getElementById('results').classList.add('on');
+  const pct=Math.round((score/Qs.length)*100);
+  document.getElementById('r-correct').textContent=score+'/'+Qs.length;
+  document.getElementById('r-pct').textContent=pct+'%';
+  document.getElementById('r-streak').textContent=bestStreak;
+  var icon,title,sub;
+  if(pct>=92){icon='★';title='Chief Justice';sub='Outstanding work. You clearly understand the Texas court system inside and out.';}
+  else if(pct>=75){icon='⚖';title='Appellate Judge';sub='Strong performance. You have a solid grasp of Texas court jurisdiction and appeals.';}
+  else if(pct>=58){icon='📋';title='Court Clerk';sub='Good effort — you understand the basics. Review the court hierarchy to strengthen the trickier areas.';}
+  else{icon='📄';title='Law Student';sub='The Texas court system is complex! Review the hierarchy slide and try again.';}
+  document.getElementById('trophy-icon').textContent=icon;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-sub').textContent=sub;
+  const rl=document.getElementById('review-list');
+  rl.innerHTML=history.map(function(h,i){
+    return '<div class="review-item"><div class="dot '+(h.correct?'ok':'no')+'"></div><div><div style="font-weight:500;margin-bottom:2px">Case #'+(i+1)+' \u2014 '+h.q.tag+'</div><div style="color:var(--color-text-secondary);font-size:12px">'+(h.correct?'Correct':'Missed \u2014 '+h.q.choices[h.q.correct])+'</div></div><span class="badge '+(h.correct?'badge-green':'badge-red')+'">'+(h.correct?'&#10003;':'&#10007;')+'</span></div>';
+  }).join('');
+}
+
+function restartGame(){
+  cur=0;score=0;answered=false;curStreak=0;bestStreak=0;history=[];
+  document.getElementById('results').classList.remove('on');
+  document.getElementById('game').classList.add('on');
+  renderQ();
+}
+</script>
+</body>
+</html>
